@@ -1,0 +1,117 @@
+-- Definición de la tabla de Libros
+CREATE TABLE Book (
+    -- El 'gid' es el ID único que nos da la API de Google Books. Lo usamos como nuestra clave primaria.
+    gid TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    subtitle TEXT,
+    -- Guardamos los autores como un solo texto separado por comas
+    authors TEXT,
+    description TEXT,
+    pageCount INTEGER,
+    thumbnailUrl TEXT,
+    isbn10 TEXT,
+    isbn13 TEXT,
+
+    -- El 'status' es para las estanterías: PENDING (Para leer), IN_PROGRESS (En progreso), COMPLETED (Terminados)
+    status TEXT NOT NULL CHECK(status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED')) DEFAULT 'PENDING',
+
+    -- Guardamos las fechas como texto en formato ISO (YYYY-MM-DD)
+    startDate TEXT,
+    endDate TEXT,
+
+    -- Rating de 0 a 10
+    rating INTEGER CHECK(rating >= 0 AND rating <= 10),
+
+    -- Notas personales
+    notes TEXT
+);
+
+-- Definición de la tabla de Categorías (para el "Archivador")
+CREATE TABLE Category (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+);
+
+-- Tabla de unión (relación Muchos-a-Muchos entre Libros y Categorías)
+-- Un libro puede estar en varias categorías.
+-- Una categoría puede tener varios libros.
+CREATE TABLE BookCategoryLink (
+    bookGid TEXT NOT NULL,
+    categoryId INTEGER NOT NULL,
+    PRIMARY KEY(bookGid, categoryId),
+    FOREIGN KEY(bookGid) REFERENCES Book(gid) ON DELETE CASCADE,
+    FOREIGN KEY(categoryId) REFERENCES Category(id) ON DELETE CASCADE
+);
+
+
+--- Queries para Libros (SQLDelight generará funciones Kotlin para esto) ---
+
+-- Coger todos los libros
+getAllBooks:
+SELECT * FROM Book;
+
+-- Coger libros por estantería (status)
+getBooksByStatus:
+SELECT * FROM Book WHERE status = ?;
+
+-- Coger un libro específico por su ID de Google
+getBookById:
+SELECT * FROM Book WHERE gid = ?;
+
+-- Insertar un libro nuevo o reemplazarlo si ya existe
+insertBook:
+INSERT OR REPLACE INTO Book(gid, title, subtitle, authors, description, pageCount, thumbnailUrl, isbn10, isbn13, status, startDate, endDate, rating, notes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Mover un libro de estanteria y/o actualizar sus fechas
+updateBookStatusAndDates:
+UPDATE Book
+SET status = ?, startDate = ?, endDate = ?
+WHERE gid = ?;
+
+-- Actualizar el rating de un libro
+updateBookRating:
+UPDATE Book
+SET rating = ?
+WHERE gid = ?;
+
+-- Borrar un libro
+deleteBookById:
+DELETE FROM Book WHERE gid = ?;
+
+
+--- Queries para Categorías ---
+
+getAllCategories:
+SELECT * FROM Category ORDER BY name ASC;
+
+insertCategory:
+INSERT OR REPLACE INTO Category(name) VALUES (?);
+
+deleteCategoryById:
+DELETE FROM Category WHERE id = ?;
+
+
+--- Queries para la Tabla de union ---
+
+-- Añadir un libro a una categoría
+linkBookToCategory:
+INSERT OR REPLACE INTO BookCategoryLink(bookGid, categoryId) VALUES (?, ?);
+
+-- Quitar un libro de una categoria
+unlinkBookFromCategory:
+DELETE FROM BookCategoryLink WHERE bookGid = ? AND categoryId = ?;
+
+-- Coger todas las categorias a las que pertenece un libro
+getCategoriesForBook:
+SELECT Category.*
+FROM Category
+JOIN BookCategoryLink ON Category.id = BookCategoryLink.categoryId
+WHERE BookCategoryLink.bookGid = ?;
+
+-- Coger todos los libros que pertenecen a una categoria
+getBooksForCategory:
+SELECT Book.*
+FROM Book
+JOIN BookCategoryLink ON Book.gid = BookCategoryLink.bookGid
+WHERE BookCategoryLink.categoryId = ?;
