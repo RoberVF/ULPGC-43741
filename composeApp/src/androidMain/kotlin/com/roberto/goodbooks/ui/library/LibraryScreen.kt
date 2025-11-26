@@ -53,7 +53,7 @@ fun LibraryScreen(
                         book = book,
                         onClick = { onBookClick(book) }
                     )
-                    Divider()
+                    HorizontalDivider()
                 }
             }
         }
@@ -98,7 +98,11 @@ fun SavedBookItem(book: Book, onClick: () -> Unit) {
             // Chip de estado (Pendiente/Leído)
             SuggestionChip(
                 onClick = { },
-                label = { Text(if (book.status == "PENDING") "Para Leer" else book.status) }
+                label = { Text(
+                    if (book.status == "COMPLETED") "Terminado"
+                    else if (book.status == "IN_PROGRESS") "Leyendo"
+                    else "Pendiente"
+                ) }
             )
         }
     }

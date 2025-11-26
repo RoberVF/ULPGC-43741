@@ -193,6 +193,7 @@ Se ha completado la integración vertical de la aplicación en Android.
 6.  Jetpack Compose detecta el cambio de estado y repinta la `LazyColumn`, mostrando los libros con título, autor y páginas.
 
 **Resultado:** La aplicación es capaz de buscar y mostrar información real de internet, validando que el módulo `shared` funciona correctamente en el ecosistema Android.
+También se ha integrado una creación de libro manual por si el libro no aparece en Google Books se pueda registrar manualmente, agregandole los mismos campos (nombre, autor, número de páginas, portada, descripción, isbn).
 
 ## Carga de Imágenes y Pantalla de Detalle
 
@@ -204,6 +205,13 @@ Implementamos la navegación desde la lista de búsqueda hacia una pantalla de d
 * Al hacer clic en un libro, pasamos su ID único (Google Book ID) a la nueva pantalla.
 * La pantalla de detalle recupera la información completa y permite la acción de **Persistencia**: transformar el objeto de la API (transitorio) en una entidad de la Base de Datos (permanente) mediante el Repositorio.
 
+## Ciclo de Lectura y Valoración
+
+Este hito se centra en la funcionalidad "Core" de seguimiento (tracking):
+* **Transiciones de Estado:** Implementación de la máquina de estados `PENDING` -> `IN_PROGRESS` -> `COMPLETED`.
+* **Timestamps Automáticos:** Registro transparente de `startDate` al iniciar y `endDate` al finalizar.
+* **Sistema de Rating:** Interfaz para puntuar el libro al completarlo, cerrando el ciclo de lectura.
+* **Persistencia de Cambios:** Uso de la query SQL `UPDATE` para modificar registros existentes sin duplicarlos.
 
 ## Informacion Interesante
 

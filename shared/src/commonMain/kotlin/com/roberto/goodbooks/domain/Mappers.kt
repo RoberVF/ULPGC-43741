@@ -49,7 +49,11 @@ fun Book.toBookItem(): BookItem {
             description = this.description,
             pageCount = this.pageCount?.toInt(),
             imageLinks = ImageLinks(thumbnail = this.thumbnailUrl),
-            industryIdentifiers = identifiers.ifEmpty { null } // No necesitamos esto para mostrar detalles
+            industryIdentifiers = identifiers.ifEmpty { null }, // No necesitamos esto para mostrar detalles
+            myStatus = this.status,
+            myRating = this.rating?.toInt(),
+            myStartDate = this.startDate,
+            myEndDate = this.endDate,
         )
     )
 }

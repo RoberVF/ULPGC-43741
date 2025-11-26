@@ -58,4 +58,19 @@ class BookRepository(driverFactory: DatabaseDriverFactory) {
         // Devolvemos la lista de items, o una lista vacía si es null
         return response.items ?: emptyList()
     }
+
+    // Actualizar estado y fechas
+    fun updateBookStatus(id: String, status: String, startDate: String?, endDate: String?) {
+        dbQueries.updateBookStatusAndDates(
+            status = status,
+            startDate = startDate,
+            endDate = endDate,
+            gid = id
+        )
+    }
+
+    // Actualizar rating
+    fun updateBookRating(id: String, rating: Long) {
+        dbQueries.updateBookRating(rating = rating, gid = id)
+    }
 }

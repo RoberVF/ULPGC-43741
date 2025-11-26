@@ -27,7 +27,12 @@ data class VolumeInfo(
     val imageLinks: ImageLinks? = null,
 
     // Identificadores de industria (ISBN)
-    val industryIdentifiers: List<IndustryIdentifier>? = null
+    val industryIdentifiers: List<IndustryIdentifier>? = null,
+
+    val myStatus: String? = null,    // "PENDING", "IN_PROGRESS", "COMPLETED"
+    val myRating: Int? = null,       // 0-10
+    val myStartDate: String? = null,
+    val myEndDate: String? = null
 )
 
 // 4. Los enlaces a las imágenes de portada

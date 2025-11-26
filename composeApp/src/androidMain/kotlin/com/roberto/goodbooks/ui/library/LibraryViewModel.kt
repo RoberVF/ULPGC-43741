@@ -11,6 +11,7 @@ import com.roberto.goodbooks.db.Book
 import kotlinx.coroutines.launch
 import com.roberto.goodbooks.network.models.BookItem
 import com.roberto.goodbooks.domain.toBookItem
+import java.time.LocalDate
 
 class LibraryViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -41,6 +42,48 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             repository.deleteBookById(bookId)
             loadLibrary()
+        }
+    }
+
+    // LOGICA
+    // Empieza libro
+    fun startReading(bookId: String) {
+        val today = LocalDate.now().toString() // "2025-11-26"
+        viewModelScope.launch {
+            // Cambiamos estado a IN_PROGRESS y guardamos fecha inicio
+            repository.updateBookStatus(bookId, "IN_PROGRESS", startDate = today, endDate = null)
+
+            loadLibrary() // Recargamos lista
+
+            // Truco: Actualizamos también el 'selectedBook' para que la pantalla de detalle se entere del cambio al instante
+            selectedBook = selectedBook?.copy(
+                volumeInfo = selectedBook!!.volumeInfo.copy(
+                    myStatus = "IN_PROGRESS",
+                    myStartDate = today
+                )
+            )
+        }
+    }
+
+    // Termina libro
+    fun finishReading(bookId: String, rating: Int) {
+        val today = LocalDate.now().toString()
+        viewModelScope.launch {
+            // 1. Guardamos estado COMPLETED y fecha fin
+            repository.updateBookStatus(bookId, "COMPLETED", startDate = selectedBook?.volumeInfo?.myStartDate, endDate = today)
+            // 2. Guardamos el rating
+            repository.updateBookRating(bookId, rating.toLong())
+
+            loadLibrary()
+
+            // Actualizamos la vista actual
+            selectedBook = selectedBook?.copy(
+                volumeInfo = selectedBook!!.volumeInfo.copy(
+                    myStatus = "COMPLETED",
+                    myEndDate = today,
+                    myRating = rating
+                )
+            )
         }
     }
 }

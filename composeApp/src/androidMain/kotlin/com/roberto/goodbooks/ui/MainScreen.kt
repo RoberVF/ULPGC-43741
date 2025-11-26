@@ -104,7 +104,19 @@ fun MainScreen() {
                     book = libraryViewModel.selectedBook, // Le pasamos el libro de la biblioteca
                     isLibraryMode = true,
                     onBackClick = { navController.popBackStack() },
-                    onFabClick = { /* Logica para empezar a leer */ },
+                    onFabClick = {
+                        libraryViewModel.selectedBook?.let { book ->
+                            // Si está pendiente, empezamos a leer
+                            if (book.volumeInfo.myStatus == "PENDING" || book.volumeInfo.myStatus == null) {
+                                libraryViewModel.startReading(book.id)
+                            }
+                        }
+                    },
+                    onFinishClick = { rating ->
+                        libraryViewModel.selectedBook?.let { book ->
+                            libraryViewModel.finishReading(book.id, rating)
+                        }
+                    },
                     onDeleteClick = {
                         libraryViewModel.selectedBook?.let { book ->
                             libraryViewModel.deleteBook(book.id)

@@ -6,17 +6,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.roberto.goodbooks.network.models.BookItem
-import androidx.compose.material.icons.filled.Delete
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,19 +27,24 @@ fun BookDetailScreen(
     isLibraryMode: Boolean,
     onBackClick: () -> Unit,
     onFabClick: () -> Unit,
+    onFinishClick: (Int) -> Unit = {},
     onDeleteClick: () -> Unit = {}
 ) {
-
     if (book == null) {
-        // Si no hay libro seleccionado, volvemos atrás
         onBackClick()
         return
     }
 
+    // Estado para mostrar/ocultar el diálogo de poner nota
+    var showRatingDialog by remember { mutableStateOf(false) }
+
+    // Estado actual del libro (PENDING, IN_PROGRESS, COMPLETED)
+    val status = book.volumeInfo.myStatus ?: "PENDING"
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detalles del Libro") },
+                title = { Text(if (isLibraryMode) "Mi Libro" else "Detalles del Libro") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -50,7 +57,7 @@ fun BookDetailScreen(
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Borrar libro",
-                                tint = MaterialTheme.colorScheme.error // Lo ponemos rojo
+                                tint = MaterialTheme.colorScheme.error
                             )
                         }
                     }
@@ -58,22 +65,42 @@ fun BookDetailScreen(
             )
         },
         floatingActionButton = {
-            // El botón cambia según el modo
-            ExtendedFloatingActionButton(
-                onClick = { onFabClick() },
-                containerColor = MaterialTheme.colorScheme.primary,
-                icon = {
-                    Icon(
-                        if (isLibraryMode) Icons.Default.PlayArrow else Icons.Default.Add,
-                        contentDescription = null
-                    )
-                },
-                text = {
-                    Text(if (isLibraryMode) "EMPEZAR LECTURA" else "GUARDAR EN BIBLIOTECA")
+            if (!isLibraryMode) {
+                // MODO BÚSQUEDA: Botón Guardar
+                ExtendedFloatingActionButton(
+                    onClick = onFabClick,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    icon = { Icon(Icons.Default.Add, null) },
+                    text = { Text("GUARDAR") }
+                )
+            } else {
+                // MODO BIBLIOTECA: Botón según estado
+                when (status) {
+                    "PENDING" -> {
+                        ExtendedFloatingActionButton(
+                            onClick = onFabClick, // Esto llamará a startReading
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            icon = { Icon(Icons.Default.PlayArrow, null) },
+                            text = { Text("EMPEZAR LECTURA") }
+                        )
+                    }
+                    "IN_PROGRESS" -> {
+                        ExtendedFloatingActionButton(
+                            onClick = { showRatingDialog = true }, // Abrimos diálogo
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            icon = { Icon(Icons.Default.Check, null) },
+                            text = { Text("TERMINAR") }
+                        )
+                    }
+                    "COMPLETED" -> {
+                        // Si ya está acabado, no mostramos botón
+                    }
                 }
-            )
+            }
         }
     ) { padding ->
+
+        // --- CONTENIDO PRINCIPAL (UNA SOLA COLUMNA) ---
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -81,8 +108,54 @@ fun BookDetailScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            // 1. PORTADA
-            // Usamos AsyncImage de Coil para cargar la URL
+
+            // 1. TARJETA DE PROGRESO (Solo si es mi libro)
+            if (isLibraryMode) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Tu Progreso", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        DetailRow("Estado:", when(status) {
+                            "PENDING" -> "Para Leer"
+                            "IN_PROGRESS" -> "Leyendo ahora..."
+                            "COMPLETED" -> "¡Terminado!"
+                            else -> status
+                        })
+
+                        if (status == "IN_PROGRESS") {
+                            DetailRow("Empezado el:", book.volumeInfo.myStartDate ?: "-")
+                        }
+
+                        if (status == "COMPLETED") {
+                            DetailRow("Leído del:", "${book.volumeInfo.myStartDate} al ${book.volumeInfo.myEndDate}")
+
+                            // Mostrar Estrellas
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "Tu Valoración:",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(100.dp)
+                                )
+                                val rating = book.volumeInfo.myRating ?: 0
+                                Text(
+                                    "$rating/10 ",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Icon(Icons.Default.Star, null, tint = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. PORTADA
             val imageUrl = book.volumeInfo.imageLinks?.thumbnail?.replace("http:", "https:")
 
             if (imageUrl != null) {
@@ -95,13 +168,13 @@ fun BookDetailScreen(
                     contentScale = ContentScale.Fit
                 )
             } else {
-                // Placeholder si no hay imagen
+                // Placeholder
                 Box(
                     modifier = Modifier
                         .height(250.dp)
                         .fillMaxWidth()
                         .padding(16.dp),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
+                    contentAlignment = Alignment.Center
                 ) {
                     Text("Sin Portada", style = MaterialTheme.typography.headlineMedium)
                 }
@@ -109,7 +182,7 @@ fun BookDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. TÍTULO Y AUTOR
+            // 3. TÍTULO Y AUTOR
             Text(
                 text = book.volumeInfo.title,
                 style = MaterialTheme.typography.headlineMedium,
@@ -126,12 +199,12 @@ fun BookDetailScreen(
 
             if (isLibraryMode) {
                 Spacer(modifier = Modifier.height(8.dp))
-                SuggestionChip(onClick = {}, label = { Text("Estado: En tu biblioteca") })
+                SuggestionChip(onClick = {}, label = { Text("En tu biblioteca") })
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 3. DESCRIPCIÓN
+            // 4. DESCRIPCIÓN
             Text(
                 text = "Sinopsis",
                 style = MaterialTheme.typography.titleSmall,
@@ -148,7 +221,7 @@ fun BookDetailScreen(
             HorizontalDivider()
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 4. Ficha Tecnica
+            // 5. FICHA TÉCNICA
             Text(
                 text = "Ficha Técnica",
                 style = MaterialTheme.typography.titleSmall,
@@ -166,10 +239,53 @@ fun BookDetailScreen(
                 DetailRow(label, identifier.identifier)
             }
 
+            // Espacio final para el botón flotante
             Spacer(modifier = Modifier.height(80.dp))
         }
     }
+
+    // --- DIÁLOGO DE VALORACIÓN ---
+    if (showRatingDialog) {
+        var currentRating by remember { mutableStateOf(5f) }
+
+        AlertDialog(
+            onDismissRequest = { showRatingDialog = false },
+            title = { Text("¡Libro Terminado!") },
+            text = {
+                Column {
+                    Text("¿Qué nota le pones? (0-10)")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "${currentRating.toInt()}",
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    Slider(
+                        value = currentRating,
+                        onValueChange = { currentRating = it },
+                        valueRange = 0f..10f,
+                        steps = 9
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showRatingDialog = false
+                    onFinishClick(currentRating.toInt())
+                }) {
+                    Text("GUARDAR")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRatingDialog = false }) {
+                    Text("CANCELAR")
+                }
+            }
+        )
+    }
 }
+
+// Componente auxiliar para las filas de detalles
 @Composable
 fun DetailRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
