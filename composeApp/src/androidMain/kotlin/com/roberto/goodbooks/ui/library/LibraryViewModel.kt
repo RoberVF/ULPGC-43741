@@ -36,4 +36,11 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         // Lo convertimos al formato que entiende la pantalla de detalle
         selectedBook = book.toBookItem()
     }
+    // Función para borrar el libro y actualizar la pantalla
+    fun deleteBook(bookId: String) {
+        viewModelScope.launch {
+            repository.deleteBookById(bookId)
+            loadLibrary()
+        }
+    }
 }

@@ -83,4 +83,42 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
+
+    // Función para guardar un libro manual
+    fun saveManualBook(
+        title: String,
+        author: String,
+        pages: String,
+        isbn: String,
+        description: String,
+        imageUri: String?
+        ) {
+        viewModelScope.launch {
+            try {
+                // Nos inventamos un ID único usando el tiempo actual
+                val randomId = "manual_${System.currentTimeMillis()}"
+                val finalDescription = description.ifBlank { "Registrado manualmente" }
+
+                val entity = com.roberto.goodbooks.db.Book(
+                    gid = randomId,
+                    title = title,
+                    subtitle = null,
+                    authors = author.ifBlank { null },
+                    description = "Registrado manualmente",
+                    pageCount = pages.toLongOrNull(),
+                    thumbnailUrl = imageUri,
+                    isbn10 = null,
+                    isbn13 = null,
+                    status = "PENDING",
+                    startDate = null,
+                    endDate = null,
+                    rating = null,
+                    notes = null
+                )
+                repository.insertBook(entity)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }

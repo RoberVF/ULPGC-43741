@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.roberto.goodbooks.network.models.BookItem
+import androidx.compose.material.icons.filled.Delete
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,7 +24,8 @@ fun BookDetailScreen(
     book: BookItem?,
     isLibraryMode: Boolean,
     onBackClick: () -> Unit,
-    onFabClick: () -> Unit
+    onFabClick: () -> Unit,
+    onDeleteClick: () -> Unit = {}
 ) {
 
     if (book == null) {
@@ -39,6 +41,18 @@ fun BookDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                actions = {
+                    // Solo mostramos la papelera si el libro ya es nuestro
+                    if (isLibraryMode) {
+                        IconButton(onClick = onDeleteClick) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Borrar libro",
+                                tint = MaterialTheme.colorScheme.error // Lo ponemos rojo
+                            )
+                        }
                     }
                 }
             )

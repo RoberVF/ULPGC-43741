@@ -26,11 +26,12 @@ import com.roberto.goodbooks.ui.library.LibraryScreen
 import com.roberto.goodbooks.ui.library.LibraryViewModel
 import com.roberto.goodbooks.ui.recommendations.RecommendationsScreen
 import com.roberto.goodbooks.ui.search.BookDetailScreen
+import com.roberto.goodbooks.ui.search.ManualEntryScreen
 import com.roberto.goodbooks.ui.search.SearchScreen
 import com.roberto.goodbooks.ui.search.SearchViewModel
 import com.roberto.goodbooks.ui.stats.StatsScreen
 
-// 1. Definimos las rutas de nuestras pantallas
+// Definimos las rutas de nuestras pantallas
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Library : Screen("library", "Biblioteca", Icons.Filled.Home)
     object Search : Screen("search", "Buscar", Icons.Filled.Search)
@@ -41,6 +42,8 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
+
+    // Instanciamos los ViewModels para compartirlos
     val searchViewModel: SearchViewModel = viewModel()
     val libraryViewModel: LibraryViewModel = viewModel()
 
@@ -102,6 +105,12 @@ fun MainScreen() {
                     isLibraryMode = true,
                     onBackClick = { navController.popBackStack() },
                     onFabClick = { /* Logica para empezar a leer */ },
+                    onDeleteClick = {
+                        libraryViewModel.selectedBook?.let { book ->
+                            libraryViewModel.deleteBook(book.id)
+                        }
+                        navController.popBackStack()
+                    }
                 )
             }
 
@@ -112,6 +121,9 @@ fun MainScreen() {
                     onBookClick = { book ->
                         searchViewModel.onBookClick(book)
                         navController.navigate("search_detail") // Cambiamos el nombre de la ruta para diferenciar
+                    },
+                    onManualClick = {
+                        navController.navigate("manual_entry")
                     }
                 )
             }
@@ -125,8 +137,28 @@ fun MainScreen() {
                     onFabClick = {
                         searchViewModel.saveSelectedBook()
                         navController.popBackStack()
-                        // Opcional: Ir a la biblioteca
-                        // navController.navigate(Screen.Library.route)
+                         navController.navigate(Screen.Library.route)
+                    },
+                )
+            }
+
+            // Pantalla de registro manual
+            composable("manual_entry") {
+                ManualEntryScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onSaveClick = { title, author, pages, isbn, description, imageUri ->
+                        searchViewModel.saveManualBook(
+                            title = title,
+                            author = author,
+                            pages = pages,
+                            isbn = isbn,
+                            description = description,
+                            imageUri = imageUri
+                        )
+                        // Volvemos atrás
+                        navController.popBackStack()
+                        // Ir a la biblioteca para verlo
+                        navController.navigate(Screen.Library.route)
                     }
                 )
             }

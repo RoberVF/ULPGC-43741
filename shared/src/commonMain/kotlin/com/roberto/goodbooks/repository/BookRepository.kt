@@ -44,6 +44,9 @@ class BookRepository(driverFactory: DatabaseDriverFactory) {
             notes = book.notes
         )
     }
+    fun deleteBookById(id: String) {
+        dbQueries.deleteBookById(id)
+    }
 
     /**
      * --- FUNCIONES DE API REMOTA (ONLINE) ---

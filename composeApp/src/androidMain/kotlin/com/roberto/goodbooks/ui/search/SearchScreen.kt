@@ -13,17 +13,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.roberto.goodbooks.network.models.BookItem
+import androidx.compose.material.icons.filled.Add
 
 @Composable
 fun SearchScreen(
     // Inyectamos el ViewModel automáticamente
     viewModel: SearchViewModel,
-    onBookClick: (BookItem) -> Unit
+    onBookClick: (BookItem) -> Unit,
+    onManualClick: () -> Unit
 ) {
     // Scaffold nos da la estructura básica (barra superior, fondo, etc.)
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("GoodBooks: Buscar") })
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onManualClick) {
+                Icon(Icons.Default.Add, contentDescription = "Añadir Manual")
+            }
         }
     ) { paddingValues ->
 
