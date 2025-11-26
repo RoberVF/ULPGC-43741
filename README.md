@@ -213,6 +213,13 @@ Este hito se centra en la funcionalidad "Core" de seguimiento (tracking):
 * **Sistema de Rating:** Interfaz para puntuar el libro al completarlo, cerrando el ciclo de lectura.
 * **Persistencia de Cambios:** Uso de la query SQL `UPDATE` para modificar registros existentes sin duplicarlos.
 
+## Sistema de Filtros
+
+Se han establecido unos filtros en el apartado "Mi Biblioteca" para poder filtrar los libros por:
+* **Estado:** Tres filtros con estado "Pendiente", "Leyendo", "Terminado"
+* **Número de páginas:** Permitiendo filtrar por rango de páginas, por ejemplo, los libros que tengan entre 100 y 200 páginas. También permite filtrar solo por una cantidad, por ejemplo, como mínimo 100 páginas o como máximo 100 páginas.
+* **Fecha:** Permitiendo solamente a los libros terminados (que son los que tendrán una fecha de inicio y fin) filtrarlos también por rango de fechas o bien por fecha mínima de inicio o fecha máxima de fin.
+
 ## Informacion Interesante
 
 #### ¿Dónde está el servidor backend?
