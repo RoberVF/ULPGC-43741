@@ -194,7 +194,15 @@ Se ha completado la integración vertical de la aplicación en Android.
 
 **Resultado:** La aplicación es capaz de buscar y mostrar información real de internet, validando que el módulo `shared` funciona correctamente en el ecosistema Android.
 
+## Carga de Imágenes y Pantalla de Detalle
 
+Para visualizar las portadas de los libros, integramos la librería **Coil**.
+* **Coil (Coroutines Image Loading):** Librería ligera respaldada por Kotlin Coroutines. Se encarga de descargar la imagen de la URL, cachearla en memoria/disco y mostrarla en un componente `AsyncImage` de Compose.
+
+**Navegación con Argumentos:**
+Implementamos la navegación desde la lista de búsqueda hacia una pantalla de detalle (`BookDetailScreen`).
+* Al hacer clic en un libro, pasamos su ID único (Google Book ID) a la nueva pantalla.
+* La pantalla de detalle recupera la información completa y permite la acción de **Persistencia**: transformar el objeto de la API (transitorio) en una entidad de la Base de Datos (permanente) mediante el Repositorio.
 
 
 ## Informacion Interesante

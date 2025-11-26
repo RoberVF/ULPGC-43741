@@ -17,7 +17,8 @@ import com.roberto.goodbooks.network.models.BookItem
 @Composable
 fun SearchScreen(
     // Inyectamos el ViewModel automáticamente
-    viewModel: SearchViewModel = viewModel()
+    viewModel: SearchViewModel,
+    onBookClick: (BookItem) -> Unit
 ) {
     // Scaffold nos da la estructura básica (barra superior, fondo, etc.)
     Scaffold(
@@ -55,8 +56,9 @@ fun SearchScreen(
             // LazyColumn es la forma eficiente de mostrar listas en Compose
             LazyColumn {
                 items(viewModel.searchResults) { book ->
-                    BookItemRow(book)
-                    Divider() // Línea separadora
+                    // Pasamos el click hacia arriba
+                    BookItemRow(book, onClick = { onBookClick(book) })
+                    Divider()
                 }
             }
         }
@@ -98,11 +100,11 @@ fun SearchBar(
 }
 
 @Composable
-fun BookItemRow(book: BookItem) {
+fun BookItemRow(book: BookItem, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Aquí haremos algo al hacer click luego */ }
+            .clickable { onClick() }
             .padding(8.dp)
     ) {
         // Título del libro

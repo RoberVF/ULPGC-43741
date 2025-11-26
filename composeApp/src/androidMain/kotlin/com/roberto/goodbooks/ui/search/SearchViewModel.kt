@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.roberto.goodbooks.GoodBooksApp
 import com.roberto.goodbooks.network.models.BookItem
 import kotlinx.coroutines.launch
+import com.roberto.goodbooks.domain.toDatabaseEntity
 
 // Heredamos de AndroidViewModel para poder acceder a la clase "Application"
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
@@ -59,6 +60,44 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 e.printStackTrace()
             } finally {
                 isLoading = false
+            }
+        }
+    }
+
+    var selectedBook by mutableStateOf<BookItem?>(null)
+        private set
+
+    fun onBookClick(book: BookItem) {
+        selectedBook = book
+    }
+
+    // Función para guardar el libro en la Base de Datos
+    fun saveSelectedBook() {
+        val bookToSave = selectedBook ?: return
+        viewModelScope.launch {
+            try {
+                // Mapeo manual rápido si el impo   rt falla por ahora:
+                val info = bookToSave.volumeInfo
+                val entity = com.roberto.goodbooks.db.Book(
+                    gid = bookToSave.id,
+                    title = info.title,
+                    subtitle = info.subtitle,
+                    authors = info.authors?.joinToString(", "),
+                    description = info.description,
+                    pageCount = info.pageCount?.toLong(),
+                    thumbnailUrl = info.imageLinks?.thumbnail?.replace("http:", "https:"),
+                    isbn10 = null,
+                    isbn13 = null,
+                    status = "PENDING",
+                    startDate = null,
+                    endDate = null,
+                    rating = null,
+                    notes = null
+                )
+                repository.insertBook(entity)
+                // Opcional: Mostrar mensaje de éxito
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
