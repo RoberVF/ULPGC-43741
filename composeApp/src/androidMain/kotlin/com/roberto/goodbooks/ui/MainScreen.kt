@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.roberto.goodbooks.ui.library.LibraryScreen
+import com.roberto.goodbooks.ui.library.LibraryViewModel
 import com.roberto.goodbooks.ui.recommendations.RecommendationsScreen
 import com.roberto.goodbooks.ui.search.BookDetailScreen
 import com.roberto.goodbooks.ui.search.SearchScreen
@@ -41,6 +42,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
 fun MainScreen() {
     val navController = rememberNavController()
     val searchViewModel: SearchViewModel = viewModel()
+    val libraryViewModel: LibraryViewModel = viewModel()
 
     // Lista de pantallas para la barra inferior
     val items = listOf(
@@ -82,28 +84,48 @@ fun MainScreen() {
             startDestination = Screen.Library.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Library.route) { LibraryScreen() }
+            composable(Screen.Library.route) {
+                LibraryScreen(
+                    viewModel = libraryViewModel,
+                    // Cuando pulsamos un libro...
+                    onBookClick = { book ->
+                        libraryViewModel.onBookClick(book) // 1. Guardamos cuál es
+                        navController.navigate("library_detail") // 2. Navegamos
+                    }
+                )
+            }
+
+            // Detalle desde biblioteca
+            composable("library_detail") {
+                BookDetailScreen(
+                    book = libraryViewModel.selectedBook, // Le pasamos el libro de la biblioteca
+                    isLibraryMode = true,
+                    onBackClick = { navController.popBackStack() },
+                    onFabClick = { /* Logica para empezar a leer */ },
+                )
+            }
 
             // Pantalla de Búsqueda
             composable(Screen.Search.route) {
                 SearchScreen(
                     viewModel = searchViewModel,
-                    // Cuando hagamos click en un libro...
                     onBookClick = { book ->
-                        searchViewModel.onBookClick(book) // Guardamos cuál es
-                        navController.navigate("book_detail") // Navegamos
+                        searchViewModel.onBookClick(book)
+                        navController.navigate("search_detail") // Cambiamos el nombre de la ruta para diferenciar
                     }
                 )
             }
 
-            // Pantalla de Detalle (NUEVA RUTA)
-            composable("book_detail") {
+            // Detalle desde busqueda
+            composable("search_detail") {
                 BookDetailScreen(
-                    viewModel = searchViewModel,
+                    book = searchViewModel.selectedBook, // Le pasamos el libro de la búsqueda
+                    isLibraryMode = false,
                     onBackClick = { navController.popBackStack() },
-                    onSaveClick = {
+                    onFabClick = {
+                        searchViewModel.saveSelectedBook()
                         navController.popBackStack()
-                        // Opcional: Navegar a la librería después de guardar
+                        // Opcional: Ir a la biblioteca
                         // navController.navigate(Screen.Library.route)
                     }
                 )

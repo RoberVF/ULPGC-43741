@@ -76,26 +76,8 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         val bookToSave = selectedBook ?: return
         viewModelScope.launch {
             try {
-                // Mapeo manual rápido si el impo   rt falla por ahora:
-                val info = bookToSave.volumeInfo
-                val entity = com.roberto.goodbooks.db.Book(
-                    gid = bookToSave.id,
-                    title = info.title,
-                    subtitle = info.subtitle,
-                    authors = info.authors?.joinToString(", "),
-                    description = info.description,
-                    pageCount = info.pageCount?.toLong(),
-                    thumbnailUrl = info.imageLinks?.thumbnail?.replace("http:", "https:"),
-                    isbn10 = null,
-                    isbn13 = null,
-                    status = "PENDING",
-                    startDate = null,
-                    endDate = null,
-                    rating = null,
-                    notes = null
-                )
+                val entity = bookToSave.toDatabaseEntity()
                 repository.insertBook(entity)
-                // Opcional: Mostrar mensaje de éxito
             } catch (e: Exception) {
                 e.printStackTrace()
             }
