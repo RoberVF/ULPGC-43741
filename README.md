@@ -232,6 +232,7 @@ El flujo de trabajo que debemos seguir sera el siguiente:
 ## Estadisticas
 Las estadisticas son uno de los pilares mas importantes de la aplicacion ya que le permitiran al lector saber cosas que solamente podra saberlas si utiliza correcta y normalmente la aplicacion.
 He establecido diferentes estadisticas para que el lector pueda tener conocimiento de la cantidad de libros que ha leido anualmente, la nota media que le ha dado a sus libros o el numero de paginas totales que hay leido entre otros.
+Ademas, he creado un apartado de retos poniendo la cantidad de libros anuales que queremos leer, el autor favorito (basado en el autor del que mas libros has leido) y muchas cosas mas.
 
 ## Informacion Interesante
 
