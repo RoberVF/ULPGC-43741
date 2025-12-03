@@ -229,6 +229,9 @@ El flujo de trabajo que debemos seguir sera el siguiente:
 * UI para la creacion de las estanterias.
 * UI para el detalle de la estanteria (ver los libros que hay dentro y meter mas).
 
+## Estadisticas
+Las estadisticas son uno de los pilares mas importantes de la aplicacion ya que le permitiran al lector saber cosas que solamente podra saberlas si utiliza correcta y normalmente la aplicacion.
+He establecido diferentes estadisticas para que el lector pueda tener conocimiento de la cantidad de libros que ha leido anualmente, la nota media que le ha dado a sus libros o el numero de paginas totales que hay leido entre otros.
 
 ## Informacion Interesante
 
