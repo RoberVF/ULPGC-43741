@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.roberto.goodbooks.GoodBooksApp
 import com.roberto.goodbooks.db.Book
+import com.roberto.goodbooks.db.Category
 import com.roberto.goodbooks.network.models.BookItem
 import com.roberto.goodbooks.domain.toBookItem
 import kotlinx.coroutines.launch
@@ -23,6 +24,14 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
 
     // Lista visible en pantalla
     var books by mutableStateOf<List<Book>>(emptyList())
+        private set
+
+    // Lista de Estanterías
+    var shelves by mutableStateOf<List<Pair<Category, Long>>>(emptyList())
+        private set
+
+    // Clave: ID del libro -> Valor: Lista de estanterías
+    var bookShelves by mutableStateOf<Map<String, List<Category>>>(emptyMap())
         private set
 
     // Filtros básicos
@@ -49,8 +58,48 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
 
     fun loadLibrary() {
         viewModelScope.launch {
+            // Cargar libros (lo que ya hacías)
             allBooks = repository.getAllBooks()
             applyFilters()
+            refreshShelves()
+            val newMap = mutableMapOf<String, List<Category>>()
+            allBooks.forEach { book ->
+                newMap[book.gid] = repository.getShelvesForBook(book.gid)
+            }
+            bookShelves = newMap
+        }
+    }
+
+    private fun refreshShelves() {
+        val list = repository.getAllShelves()
+        // Mapeamos cada estantería para incluir cuántos libros tiene dentro
+        shelves = list.map { category ->
+            val count = repository.countBooksInShelf(category.id)
+            category to count
+        }
+    }
+
+    // --- ACCIONES DE ESTANTERÍA ---
+
+    fun createShelf(name: String, desc: String, color: Long) {
+        viewModelScope.launch {
+            repository.createShelf(name, desc, color)
+            refreshShelves()
+        }
+    }
+
+    fun deleteShelf(shelfId: Long) {
+        viewModelScope.launch {
+            repository.deleteShelf(shelfId)
+            refreshShelves()
+        }
+    }
+
+    // Añadir libro a estantería (usado desde la vista de detalle de estantería)
+    fun addBookToShelf(bookId: String, shelfId: Long) {
+        viewModelScope.launch {
+            repository.addBookToShelf(bookId, shelfId)
+            refreshShelves() // Para actualizar el contador
         }
     }
 

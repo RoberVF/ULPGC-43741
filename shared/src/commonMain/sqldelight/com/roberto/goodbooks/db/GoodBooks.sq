@@ -4,7 +4,6 @@ CREATE TABLE Book (
     gid TEXT NOT NULL PRIMARY KEY,
     title TEXT NOT NULL,
     subtitle TEXT,
-    -- Guardamos los autores como un solo texto separado por comas
     authors TEXT,
     description TEXT,
     pageCount INTEGER,
@@ -26,15 +25,19 @@ CREATE TABLE Book (
     notes TEXT
 );
 
--- Definición de la tabla de Categorías (para el "Archivador")
+-- Definición de la tabla de Categorías (para las "Estanterias")
 CREATE TABLE Category (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    colorHex INTEGER NOT NULL DEFAULT 0, -- Guardamos el color como Long (ARGB)
+    creationDate TEXT NOT NULL
 );
 
 -- Tabla de unión (relación Muchos-a-Muchos entre Libros y Categorías)
 -- Un libro puede estar en varias categorías.
 -- Una categoría puede tener varios libros.
+-- Tabla de unión (Muchos a Muchos)
 CREATE TABLE BookCategoryLink (
     bookGid TEXT NOT NULL,
     categoryId INTEGER NOT NULL,
@@ -44,8 +47,7 @@ CREATE TABLE BookCategoryLink (
 );
 
 
---- Queries para Libros (SQLDelight generará funciones Kotlin para esto) ---
-
+--- QUERIES LIBROS ---
 -- Coger todos los libros
 getAllBooks:
 SELECT * FROM Book;
@@ -80,16 +82,39 @@ deleteBookById:
 DELETE FROM Book WHERE gid = ?;
 
 
---- Queries para Categorías ---
+--- QUERIES ESTANTERÍAS (SHELVES) ---
 
-getAllCategories:
+-- Obtener todas las estanterías
+getAllShelves:
 SELECT * FROM Category ORDER BY name ASC;
 
-insertCategory:
-INSERT OR REPLACE INTO Category(name) VALUES (?);
+-- Crear una estantería
+createShelf:
+INSERT OR IGNORE INTO Category(name, description, colorHex, creationDate)
+VALUES (?, ?, ?, ?);
 
-deleteCategoryById:
+-- Borrar estantería
+deleteShelf:
 DELETE FROM Category WHERE id = ?;
+
+-- Añadir libro a estantería
+addBookToShelf:
+INSERT OR IGNORE INTO BookCategoryLink(bookGid, categoryId) VALUES (?, ?);
+
+-- Quitar libro de estantería
+removeBookFromShelf:
+DELETE FROM BookCategoryLink WHERE bookGid = ? AND categoryId = ?;
+
+-- Obtener libros de una estantería específica
+getBooksInShelf:
+SELECT Book.*
+FROM Book
+JOIN BookCategoryLink ON Book.gid = BookCategoryLink.bookGid
+WHERE BookCategoryLink.categoryId = ?;
+
+-- Contar cuántos libros hay en una estantería (para mostrar el numerito)
+countBooksInShelf:
+SELECT COUNT(*) FROM BookCategoryLink WHERE categoryId = ?;
 
 
 --- Queries para la Tabla de union ---

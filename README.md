@@ -220,6 +220,16 @@ Se han establecido unos filtros en el apartado "Mi Biblioteca" para poder filtra
 * **Número de páginas:** Permitiendo filtrar por rango de páginas, por ejemplo, los libros que tengan entre 100 y 200 páginas. También permite filtrar solo por una cantidad, por ejemplo, como mínimo 100 páginas o como máximo 100 páginas.
 * **Fecha:** Permitiendo solamente a los libros terminados (que son los que tendrán una fecha de inicio y fin) filtrarlos también por rango de fechas o bien por fecha mínima de inicio o fecha máxima de fin.
 
+## La estanteria
+El concepto de la estanteria es bastante interesante, ya que permite a los usuarios poder agrupar los libros en las carpetas en las que les resulte mas comodo. 
+El flujo de trabajo que debemos seguir sera el siguiente:
+* Actualizaremos en la base de datos la tabla Category ya que aunque Category ya este creado quiero que tenga mas columnas como color, descripcion, etc.
+* Hare la funcionalidad para poder crear estanterias y meter/sacar libros de ella.
+* Habra que modificar el UI de la seccion "Biblioteca" para poder/crear ver las estanterias.
+* UI para la creacion de las estanterias.
+* UI para el detalle de la estanteria (ver los libros que hay dentro y meter mas).
+
+
 ## Informacion Interesante
 
 #### ¿Dónde está el servidor backend?

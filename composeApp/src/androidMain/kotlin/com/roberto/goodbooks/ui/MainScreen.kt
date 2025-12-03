@@ -12,6 +12,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,6 +32,7 @@ import com.roberto.goodbooks.ui.search.ManualEntryScreen
 import com.roberto.goodbooks.ui.search.SearchScreen
 import com.roberto.goodbooks.ui.search.SearchViewModel
 import com.roberto.goodbooks.ui.stats.StatsScreen
+import com.roberto.goodbooks.ui.library.ShelfDetailScreen
 
 // Definimos las rutas de nuestras pantallas
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
@@ -87,13 +90,36 @@ fun MainScreen() {
             startDestination = Screen.Library.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+
+            // 1. LIBRARY SCREEN
             composable(Screen.Library.route) {
                 LibraryScreen(
                     viewModel = libraryViewModel,
-                    // Cuando pulsamos un libro...
                     onBookClick = { book ->
-                        libraryViewModel.onBookClick(book) // 1. Guardamos cuál es
-                        navController.navigate("library_detail") // 2. Navegamos
+                        libraryViewModel.onBookClick(book)
+                        navController.navigate("library_detail")
+                    },
+                    // --- NUEVO: Al hacer click en una estantería ---
+                    onShelfClick = { shelfId ->
+                        navController.navigate("shelf_detail/$shelfId")
+                    }
+                )
+            }
+
+            // 2. SHELF DETAIL SCREEN
+            composable(
+                route = "shelf_detail/{shelfId}",
+                arguments = listOf(navArgument("shelfId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val shelfId = backStackEntry.arguments?.getLong("shelfId") ?: 0L
+
+                ShelfDetailScreen(
+                    shelfId = shelfId,
+                    onBackClick = { navController.popBackStack() },
+                    onBookClick = { book ->
+                        // Si pulsamos un libro dentro de la estantería, vamos al detalle normal
+                        libraryViewModel.onBookClick(book)
+                        navController.navigate("library_detail")
                     }
                 )
             }

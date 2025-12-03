@@ -1,6 +1,7 @@
 package com.roberto.goodbooks.repository
 
 import com.roberto.goodbooks.db.Book
+import com.roberto.goodbooks.db.Category
 import com.roberto.goodbooks.db.DatabaseDriverFactory
 import com.roberto.goodbooks.db.GoodBooksDatabase
 import com.roberto.goodbooks.network.GoogleBooksApiClient
@@ -72,5 +73,41 @@ class BookRepository(driverFactory: DatabaseDriverFactory) {
     // Actualizar rating
     fun updateBookRating(id: String, rating: Long) {
         dbQueries.updateBookRating(rating = rating, gid = id)
+    }
+
+    // --- FUNCIONES DE ESTANTERÍAS ---
+
+    fun getAllShelves(): List<Category> {
+        return dbQueries.getAllShelves().executeAsList()
+    }
+
+    fun createShelf(name: String, description: String?, color: Long) {
+        // Usamos una fecha simple por ahora
+        val date = "2025-01-01" // Idealmente usar Clock.System.now() si tuvieras la librería
+        dbQueries.createShelf(name, description, color, date)
+    }
+
+    fun deleteShelf(id: Long) {
+        dbQueries.deleteShelf(id)
+    }
+
+    fun getBooksInShelf(shelfId: Long): List<Book> {
+        return dbQueries.getBooksInShelf(shelfId).executeAsList()
+    }
+
+    fun addBookToShelf(bookId: String, shelfId: Long) {
+        dbQueries.addBookToShelf(bookId, shelfId)
+    }
+    fun removeBookFromShelf(bookGid: String, shelfId: Long) {
+        dbQueries.removeBookFromShelf(bookGid, shelfId)
+    }
+
+    fun getShelvesForBook(bookId: String): List<Category> {
+        return dbQueries.getCategoriesForBook(bookId).executeAsList()
+    }
+
+    // Función auxiliar para saber cuántos libros tiene cada estantería
+    fun countBooksInShelf(shelfId: Long): Long {
+        return dbQueries.countBooksInShelf(shelfId).executeAsOne()
     }
 }
