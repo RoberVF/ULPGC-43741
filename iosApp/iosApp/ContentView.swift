@@ -2,32 +2,36 @@ import SwiftUI
 import Shared
 
 struct ContentView: View {
-    @State private var showContent = false
+    // Recibimos el repositorio desde iOSApp
+    let repository: BookRepository
+    
     var body: some View {
-        VStack {
-            Button("Click me!") {
-                withAnimation {
-                    showContent = !showContent
+        // En Android: NavigationBar
+        // En iOS: TabView
+        TabView {
+            // Pestaña 1: Biblioteca
+            LibraryScreen(repository: repository)
+                .tabItem {
+                    Label("Biblioteca", systemImage: "books.vertical")
                 }
-            }
-
-            if showContent {
-                VStack(spacing: 16) {
-                    Image(systemName: "swift")
-                        .font(.system(size: 200))
-                        .foregroundColor(.accentColor)
-                    Text("SwiftUI: \(Greeting().greet())")
+            
+            // Pestaña 2: Buscar
+            SearchScreen(repository: repository)
+                .tabItem {
+                    Label("Buscar", systemImage: "magnifyingglass")
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
-            }
+            
+            // Pestaña 3: Estadísticas
+            StatsScreen(repository: repository)
+                .tabItem {
+                    Label("Estadísticas", systemImage: "chart.bar.xaxis")
+                }
+            
+            // Pestaña 4: Recomendaciones
+            RecommendationsScreen()
+                .tabItem {
+                    Label("Para ti", systemImage: "star")
+                }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .padding()
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
     }
 }
